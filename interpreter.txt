@@ -1,0 +1,3 @@
+/opt/anaconda3/bin/python3 /Users/ricardoperdomo/Desktop/tripleten/cars_project/app.py
+
+streamlit run /Users/ricardoperdomo/Desktop/tripleten/cars_project/app.py
