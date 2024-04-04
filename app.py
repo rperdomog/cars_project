@@ -73,75 +73,20 @@ st.plotly_chart(fig)
 
 
 # Avg days listed by brand
-average_days_listed_by_brand = df.groupby('manufacturer')['days_listed'].mean().reset_index()
 
-fig = px.bar(average_days_listed_by_brand, x='manufacturer', y='days_listed', labels={'manufacturer':'Brand', 'days_listed':'Average Days Listed'},
-             title='Average Days Listed for Each Car Brand', color='manufacturer', color_discrete_sequence=px.colors.qualitative.Safe)
-fig.update_layout(xaxis_tickangle=-45)
-st.plotly_chart(fig)
-
-# Price ranges
-price_bins = np.linspace(df['price'].min(), df['price'].max(), num=6)
-price_labels = [f"${int(price_bins[i])}-{int(price_bins[i+1])}" for i in range(len(price_bins)-1)]
-
-# New column for price range
-df['price_range'] = pd.cut(df['price'], bins=price_bins, labels=price_labels, include_lowest=True)
-
-# Calculate average days listed per price range
-average_days_listed_by_price_range = df.groupby('price_range')['days_listed'].mean().reset_index()
-
-# Define the price ranges
-price_ranges = [(0, 10000), (10000, 20000), (20000, 30000), (30000, 40000), (40000, 50000), (50000, float('inf'))]
-
-# Calculate the average days listed for each price range
-avg_days_listed_per_range = []
-for price_range in price_ranges:
-    lower_bound, upper_bound = price_range
-    if upper_bound == float('inf'):
-        filtered_df = df[(df['price'] >= lower_bound)]
-    else:
-        filtered_df = df[(df['price'] >= lower_bound) & (df['price'] < upper_bound)]
-    avg_days_listed = filtered_df['days_listed'].mean()
-    avg_days_listed_per_range.append(avg_days_listed)
-
-# Create a DataFrame for the plot
-plot_data = {'Price Range': ['${}-{}'.format(pr[0], pr[1]) if pr[1] != float('inf') else '${}+'.format(pr[0]) for pr in price_ranges],
-             'Average Days Listed': avg_days_listed_per_range}
-plot_df = pd.DataFrame(plot_data)
-
-# Create a bar chart using Plotly Express
-fig = px.bar(plot_df, x='Price Range', y='Average Days Listed', color='Price Range',
-             title='Average Days Listed per Price Range')
-fig.update_xaxes(tickangle=45)
-fig.show()
-
-# Calculate the average days listed per car type
-avg_days_listed_per_type = df.groupby('type')['days_listed'].mean().reset_index()
-
-# Create a bar chart using Plotly Express
-fig = px.bar(avg_days_listed_per_type, x='type', y='days_listed',
-             title='Average Days Listed per Car Type',
-             labels={'type': 'Car Type', 'days_listed': 'Average Days Listed'})
-fig.update_xaxes(title_text=None, tickangle=45)
-fig.show()
-
-df = pd.DataFrame({
-    'odometer': [25000, 75000, 125000, 175000, 225000],
-    'price': [15000, 12000, 9000, 6000, 4000]
-})
-
-# Define mileage ranges
-mileage_bins = [0, 50000, 100000, 150000, 200000, float('inf')]
-mileage_labels = ['0-50k', '50k-100k', '100k-150k', '150k-200k', '200k+']
-
-# Create a new column with mileage ranges
-df['mileage_range'] = pd.cut(df['odometer'], bins=mileage_bins, labels=mileage_labels)
 
 # Calculate the average price per mileage range
-avg_price_per_mileage_range = df.groupby('mileage_range')['price'].mean().reset_index()
+mileage_bins = [0, 50000, 100000, 150000, 200000, float('inf')]
+mileage_labels = ['0-50k', '50k-100k', '100k-150k', '150k-200k', '200k+']
+df['mileage_range'] = pd.cut(df['odometer'], bins=mileage_bins, labels=mileage_labels)
+avg_price_per_range = df.groupby('mileage_range')['price'].mean().reset_index()
 
-# Plot the average price per mileage range using Plotly Express
-fig = px.bar(avg_price_per_mileage_range, x='mileage_range', y='price', 
-             title='Average Price per Mileage Range',
-             labels={'mileage_range': 'Mileage Range', 'price': 'Average Price'})
-fig.show()
+# Create a scatter plot
+fig = px.scatter(avg_price_per_range, x='mileage_range', y='price', title='Average Price per Mileage Range',
+                 labels={'mileage_range': 'Mileage Range', 'price': 'Average Price'})
+
+# Update x-axis to display mileage ranges nicely
+fig.update_xaxes(tickvals=mileage_labels, ticktext=[f'{label} ({str(bin)})' for label, bin in zip(mileage_labels, mileage_bins)])
+
+# Show the plot
+st.plotly_chart(fig)
