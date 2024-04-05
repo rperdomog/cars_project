@@ -45,22 +45,30 @@ st.write(px.histogram(df_filtered,
 #Brand popularity
 df['manufacturer'] = df['model'].str.split(' ').str[0]
 
-brand_counts = df['manufacturer'].value_counts()
-top_brands = brand_counts.head(20)
+top_brands = df['manufacturer'].value_counts().head(20).index
+filtered_df = df[df['manufacturer'].isin(top_brands)]
 
-fig = px.bar(x=top_brands.index, y=top_brands.values, labels={'x':'Brand', 'y':'Count'},
-             title='Top 20 Most Popular Car Brands', color_discrete_sequence=['#007F73'])
-fig.update_layout(xaxis_tickangle=-45)
-st.plotly_chart(fig)
 
-#Car model popularity
-model_counts = df['model'].value_counts()
-top_models = model_counts.head(20)
+# Car model popularity histogram with dropdown
+def plot_model_popularity(df, selected_models=None):
+    if selected_models is not None and 'All' not in selected_models:
+        filtered_df = df[df['model'].isin(selected_models)]
+        title = f"Selected Car Models ({len(selected_models)})"
+    else:
+        filtered_df = df
+        title = 'All Car Models'
+    
+    model_counts = filtered_df['model'].value_counts()
+    fig = px.bar(x=model_counts.index, y=model_counts.values, labels={'x':'Model', 'y':'Count'},
+                 title=title, color_discrete_sequence=['#007F73'])
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig)
 
-fig = px.bar(x=top_models.index, y=top_models.values, labels={'x':'Model', 'y':'Count'},
-             title='Top 20 Most Popular Car Models', color_discrete_sequence=['#007F73'])
-fig.update_layout(xaxis_tickangle=-45)
-st.plotly_chart(fig)
+# Dropdown list with all car models
+all_models = df['model'].unique()
+default_models = all_models[:5]  # Default to the first two models
+selected_models = st.multiselect('Select car models', ['All'] + all_models.tolist(), default=default_models)
+plot_model_popularity(df, selected_models)
 
 #Mean brand price
 
@@ -71,8 +79,6 @@ fig = px.bar(mean_price_by_brand, x='manufacturer', y='price', labels={'manufact
 fig.update_layout(xaxis_tickangle=-45)
 st.plotly_chart(fig)
 
-
-# Avg days listed by brand
 
 
 # Calculate the average price per mileage range
