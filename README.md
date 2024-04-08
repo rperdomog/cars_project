@@ -32,4 +32,4 @@ streamlit run app.py
 
 ## Link to the project deployed on Render
 
-  External URL: http://34.213.214.55:8501
+  External URL: https://cars-project-1.onrender.com
